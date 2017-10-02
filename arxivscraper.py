@@ -142,7 +142,8 @@ class Scraper(object):
             xml = response.read()
             root = ET.fromstring(xml)
             hasError = root.findall("error")
-            if not hasError is None:
+            print("has error? "+str(len(hasError)))
+            if len(hasError) > 0:
                 print("has error: "+xml.decode("utf-8"))
                 return None
             # print("xml:"+xml.decode("utf-8"))

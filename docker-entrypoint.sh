@@ -23,11 +23,10 @@ if [ "$SSH_KEY" ]; then
 fi
 
 python --version
-echo $1 "$2" "$3" "$4"
+# echo $1 "$2" "$3" "$4"
 if [ $1 = "run" ]; then
   python3 bin/scraper.py $2 $3 $4
 elif [ $1 = "sh" ]; then
-  echo "Shell..."
   /bin/sh
 elif [ $1 = "server" ]; then
   exec gunicorn -c gunicorn.ini server:app
