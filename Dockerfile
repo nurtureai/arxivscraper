@@ -16,7 +16,8 @@ RUN mkdir -p /home/app/.ssh
 RUN mkdir -p /home/app/bin
 RUN chown -R app:app /home/app
 
-RUN cd /home/app && git clone https://github.com/Mahdisadjadi/arxivscraper.git && cd arxivscraper && python setup.py install
+COPY arxivscraper.py /home/app/
+#RUN cd /home/app && git clone https://github.com/Mahdisadjadi/arxivscraper.git && cd arxivscraper && python setup.py install
 
 ENV LANG en_US.utf8
 ENV SSH_KEY ""

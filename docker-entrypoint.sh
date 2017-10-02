@@ -22,7 +22,6 @@ if [ "$SSH_KEY" ]; then
   fi
 fi
 
-whoami
 python --version
 echo $1 "$2" "$3" "$4"
 if [ $1 = "run" ]; then

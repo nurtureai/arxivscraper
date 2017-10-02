@@ -15,3 +15,6 @@
 ## deployment
 * docker build -t nurtureai/arxivscraper
 * docker push nurtureai/arxivscraper
+
+## latest & credit:
+* https://github.com/Mahdisadjadi/arxivscraper

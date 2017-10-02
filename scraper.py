@@ -1,9 +1,10 @@
 import getopt
 import arxivscraper
+
 import sys
 
 def main():
-	println("running...")
+	print("running...")
 	try:
 		opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
 	except getopt.GetoptError as err:
@@ -18,18 +19,21 @@ def main():
 			sys.exit(0)
 
 	cat = ""
-	if args.size >= 1:
+	if len(args) >= 1:
 		cat = args[0]
 	date_from = ""
 	date_to = ""
-	if args.size >= 2:
+	if len(args) >= 2:
 		date_from = args[1]
 
-	if args.size >= 3:
+	if len(args) >= 3:
 		date_to = args[2]
 
-	println("fetching category: "+cat+", from: "+date_from+", to: "+date_to)
+	print("fetching category: "+cat+", from: "+date_from+", to: "+date_to)
 	scraper = arxivscraper.Scraper(category=cat, date_from=date_from,date_until=date_to)
 	out = scraper.scrape()
 	print(out)
 
+
+if __name__ == '__main__':
+	main()
