@@ -4,7 +4,7 @@ import tempfile
 import logging
 import urllib
 import arxivscraper
-from flask import Flask, request, redirect, url_for, abort, send_file
+from flask import Flask, request, redirect, url_for, abort, send_file, jsonify
 from werkzeug import secure_filename
 
 UPLOAD_FOLDER = '/uploads'
@@ -17,19 +17,23 @@ logging.getLogger().setLevel(logging.INFO)
 
 @app.route('/')
 def hello_world():
-    return 'Hello World!'
+  return 'Hello World!'
 
 @app.route('/crawl')
 def crawl():
-	cat = request.args.get('c')
+  cat = request.args.get('c')
   date_from = request.args.get('from')
   date_to = request.args.get('to')
 
-  println("fetching category: "+cat+", from: "+date_from+", to: "+date_to)
-	scraper = arxivscraper.Scraper(category=cat, date_from=date_from,date_until=date_to)
-	out = scraper.scrape()
-	print(out)
+  print("fetching category: "+cat+", from: "+date_from+", to: "+date_to)
+  scraper = arxivscraper.Scraper(category=cat, date_from=date_from,date_until=date_to)
+  ds = scraper.scrape()
+  res = []
+  for row in ds:
+    row.Append(row.output())
+  
+  return jsonify(res)
 
 if __name__ == '__main__':
-    app.debug = True
-    app.run(host='0.0.0.0')
+  app.debug = True
+  app.run(host='0.0.0.0')

@@ -17,6 +17,9 @@ RUN mkdir -p /home/app/bin
 RUN chown -R app:app /home/app
 
 COPY arxivscraper.py /home/app/
+COPY gunicorn.ini /home/app/
+COPY server.py /home/app/
+COPY config.py /home/app/
 #RUN cd /home/app && git clone https://github.com/Mahdisadjadi/arxivscraper.git && cd arxivscraper && python setup.py install
 
 ENV LANG en_US.utf8

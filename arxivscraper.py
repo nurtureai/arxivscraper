@@ -116,15 +116,15 @@ class Scraper(object):
             self.append_all = False
             self.keys = filters.keys()
 
-    def scrape(self):
+    def scrape(self, limit=20, start=0):
         t0 = time.time()
-        url = self.url
+        url = self.url +"&max_results="+limit+"&start="+start
         print(url)
         ds = []
         k = 0
         while True:
             k += 1
-            print('fetching up to ', 1000 * k, 'records...')
+            print('fetching up to ', limit * k, 'records...')
             try:
                 response = urlopen(url)
             except HTTPError as e:
@@ -138,6 +138,12 @@ class Scraper(object):
 
             xml = response.read()
             root = ET.fromstring(xml)
+            hasError = root.findall("error")
+            if not hasError is None:
+                print("has error: "+xml.decode("utf-8"))
+                return None
+            # print("xml:"+xml.decode("utf-8"))
+
             records = root.findall(OAI + 'ListRecords/' + OAI + 'record')
             for record in records:
                 meta = record.find(OAI + 'metadata').find(ARXIV + 'arXiv')
@@ -153,7 +159,7 @@ class Scraper(object):
 
                     if save_record:
                         ds.append(record)
-
+            
             token = root.find(OAI + 'ListRecords').find(OAI + 'resumptionToken')
             if token is None or token.text is None:
                 break

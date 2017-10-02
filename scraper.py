@@ -31,8 +31,9 @@ def main():
 
 	print("fetching category: "+cat+", from: "+date_from+", to: "+date_to)
 	scraper = arxivscraper.Scraper(category=cat, date_from=date_from,date_until=date_to)
-	out = scraper.scrape()
-	print(out)
+	ds = scraper.scrape()
+	for row in ds:
+		print(row.output())
 
 
 if __name__ == '__main__':

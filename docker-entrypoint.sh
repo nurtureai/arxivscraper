@@ -29,8 +29,8 @@ if [ $1 = "run" ]; then
 elif [ $1 = "sh" ]; then
   echo "Shell..."
   /bin/sh
-elif [ $1 = "serve" ]; then
-  gunicorn -c gunicorn.ini.py serve:app
+elif [ $1 = "server" ]; then
+  exec gunicorn -c gunicorn.ini server:app
 else
   echo "nothing todo"
   exit 1
