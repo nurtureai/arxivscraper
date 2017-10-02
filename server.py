@@ -24,15 +24,14 @@ def crawl():
   cat = request.args.get('c')
   date_from = request.args.get('from')
   date_to = request.args.get('to')
+  start = request.args.get("start", 0)
+  limit = request.args.get("limit", 20)
 
-  print("fetching category: "+cat+", from: "+date_from+", to: "+date_to)
+  # print("fetching category: "+cat+", from: "+date_from+", to: "+date_to)
   scraper = arxivscraper.Scraper(category=cat, date_from=date_from,date_until=date_to)
   ds = scraper.scrape()
-  res = []
-  for row in ds:
-    row.Append(row.output())
   
-  return jsonify(res)
+  return jsonify(ds)
 
 if __name__ == '__main__':
   app.debug = True

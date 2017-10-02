@@ -118,12 +118,15 @@ class Scraper(object):
 
     def scrape(self, limit=20, start=0):
         t0 = time.time()
-        url = self.url +"&max_results="+limit+"&start="+start
+        # url = self.url +"&max_results="+str(limit)+"&start="+str(start)
+        url = self.url
         print(url)
         ds = []
-        k = 0
+        k = start
         while True:
             k += 1
+            if k > start+limit:
+                 break
             print('fetching up to ', limit * k, 'records...')
             try:
                 response = urlopen(url)
