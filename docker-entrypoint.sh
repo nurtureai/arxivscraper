@@ -26,11 +26,12 @@ whoami
 python --version
 echo $1 "$2" "$3" "$4"
 if [ $1 = "run" ]; then
-  echo "Running..."
-  pwd
-  python bin/scraper.py $2 $3 $4
+  python3 bin/scraper.py $2 $3 $4
+elif [ $1 = "sh" ]; then
+  echo "Shell..."
+  /bin/sh
 elif [ $1 = "serve" ]; then
-  echo "Server!"
+  gunicorn -c gunicorn.ini.py serve:app
 else
   echo "nothing todo"
   exit 1

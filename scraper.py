@@ -3,7 +3,7 @@ import arxivscraper
 import sys
 
 def main():
-	println("starting...")
+	println("running...")
 	try:
 		opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
 	except getopt.GetoptError as err:
@@ -28,7 +28,7 @@ def main():
 	if args.size >= 3:
 		date_to = args[2]
 
-	println("fetching category: "+category+", from: "+date_from+", to: "+date_to)
+	println("fetching category: "+cat+", from: "+date_from+", to: "+date_to)
 	scraper = arxivscraper.Scraper(category=cat, date_from=date_from,date_until=date_to)
 	out = scraper.scrape()
 	print(out)
