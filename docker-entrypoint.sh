@@ -1,5 +1,5 @@
 #!/bin/sh
-
+set -e
 
 if [ "$SSH_KEY" ]; then
   echo "$SSH_KEY
@@ -22,7 +22,21 @@ if [ "$SSH_KEY" ]; then
   fi
 fi
 
-python scrapper.py
+whoami
+python --version
+echo $1 "$2" "$3" "$4"
+if [ $1 = "run" ]; then
+  echo "Running..."
+  pwd
+  python bin/scraper.py $2 $3 $4
+elif [ $1 = "serve" ]; then
+  echo "Server!"
+else
+  echo "nothing todo"
+  exit 1
+fi
 
 # exec gosu /usr/sbin/sshd -D &
 # while true; do sleep 1000; done
+
+set +e
