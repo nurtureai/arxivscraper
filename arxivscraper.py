@@ -127,7 +127,7 @@ class Scraper(object):
             k += 1
             if k > start+limit:
                  break
-            print('fetching up to ', limit * k, 'records...')
+            print('fetching up to ', k, "/", limit, 'records...')
             try:
                 response = urlopen(url)
             except HTTPError as e:
@@ -145,7 +145,7 @@ class Scraper(object):
             print("has error? "+str(len(hasError)))
             if len(hasError) > 0:
                 print("has error: "+xml.decode("utf-8"))
-                return None
+                raise "error xml"
             # print("xml:"+xml.decode("utf-8"))
 
             records = root.findall(OAI + 'ListRecords/' + OAI + 'record')
@@ -163,13 +163,17 @@ class Scraper(object):
 
                     if save_record:
                         ds.append(record)
-            
-            token = root.find(OAI + 'ListRecords').find(OAI + 'resumptionToken')
+            listRecords = root.find(OAI + 'ListRecords')
+            if listRecords is None:
+                print("ListRecords not found", xml.decode("utf-8"))
+                return ds
+            token = listRecords.find(OAI + 'resumptionToken')
             if token is None or token.text is None:
                 break
             else:
                 url = BASE + 'resumptionToken=%s' % token.text
-
+        
+        # end while
         t1 = time.time()
         print('fetching is completes in {0:.1f} seconds.'.format(t1 - t0))
         return ds

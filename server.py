@@ -5,6 +5,7 @@ import logging
 import urllib
 import arxivscraper
 from flask import Flask, request, redirect, url_for, abort, send_file, jsonify
+from flask.ext.api import status
 from werkzeug import secure_filename
 
 UPLOAD_FOLDER = '/uploads'
@@ -27,10 +28,13 @@ def crawl():
   start = request.args.get("start", 0)
   limit = request.args.get("limit", 20)
 
-  # print("fetching category: "+cat+", from: "+date_from+", to: "+date_to)
-  scraper = arxivscraper.Scraper(category=cat, date_from=date_from,date_until=date_to)
-  ds = scraper.scrape()
-  
+  try:
+    # print("fetching category: "+cat+", from: "+date_from+", to: "+date_to)
+    scraper = arxivscraper.Scraper(category=cat, date_from=date_from,date_until=date_to)
+    ds = scraper.scrape()
+  except Exception, e:
+    return jsonify({error: e.message}), status.HTTP_500_INTERNAL_SERVER_ERROR
+
   return jsonify(ds)
 
 if __name__ == '__main__':
