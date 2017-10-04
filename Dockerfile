@@ -7,7 +7,7 @@ RUN apk update \
 
 #RUN pip3 --version
 #RUN pip3 install arxivscraper
-RUN pip3 install gevent gunicorn flask
+RUN pip3 install gevent gunicorn flask Flask-API
 
 RUN adduser -h /home/app -D -s /bin/bash -g app,sudo app
 #RUN usermod -a -G app,sudo app

@@ -37,7 +37,8 @@ class Record(object):
         self.url = 'https://arxiv.org/abs/' + self.id
         self.title = self._get_text(ARXIV, 'title')
         self.abstract = self._get_text(ARXIV, 'abstract')
-        self.cats = self._get_text(ARXIV, 'categories')
+        self.cats = self._get_text(ARXIV, 'categories').split(" ")
+        self.pdf = "https://arxiv.org/pdf/" + self.id + ".pdf"
         self.created = self._get_text(ARXIV, 'created')
         self.updated = self._get_text(ARXIV, 'updated')
         self.doi = self._get_text(ARXIV, 'doi')
@@ -64,7 +65,8 @@ class Record(object):
          'created': self.created,
          'updated': self.updated,
          'authors': self.authors,
-         'url': self.url}
+         'url': self.url,
+         'pdf': self.pdf}
         return d
 
 
@@ -120,14 +122,12 @@ class Scraper(object):
         t0 = time.time()
         # url = self.url +"&max_results="+str(limit)+"&start="+str(start)
         url = self.url
-        print(url)
+        print("fetching: ", start, "/", limit, url)
+        sys.stdout.flush()
         ds = []
-        k = start
+        k = 0
         while True:
-            k += 1
-            if k > start+limit:
-                 break
-            print('fetching up to ', k, "/", limit, 'records...')
+            sys.stdout.flush()
             try:
                 response = urlopen(url)
             except HTTPError as e:
@@ -149,24 +149,41 @@ class Scraper(object):
             # print("xml:"+xml.decode("utf-8"))
 
             records = root.findall(OAI + 'ListRecords/' + OAI + 'record')
-            for record in records:
-                meta = record.find(OAI + 'metadata').find(ARXIV + 'arXiv')
-                record = Record(meta).output()
-                if self.append_all:
-                    ds.append(record)
-                else:
-                    save_record = False
-                    for key in self.keys:
-                        for word in self.filters[key]:
-                            if word.lower() in record[key]:
-                                save_record = True
+            sys.stdout.flush()
+            print("records: ", len(records), "k", k)
+            if k >= start:
+                for record in records:
+                    meta = record.find(OAI + 'metadata').find(ARXIV + 'arXiv')
+                    record = Record(meta).output()
+                    if k >= start and k < start+limit:
+                        if self.append_all:
+                            ds.append(record)
+                        else:
+                            save_record = False
+                            for key in self.keys:
+                                for word in self.filters[key]:
+                                    if word.lower() in record[key]:
+                                        save_record = True
 
-                    if save_record:
-                        ds.append(record)
-            listRecords = root.find(OAI + 'ListRecords')
-            if listRecords is None:
-                print("ListRecords not found", xml.decode("utf-8"))
-                return ds
+                            if save_record:
+                                ds.append(record)
+                    k +=1
+                    if k >= start+limit:
+                        break# skip after max reached
+                
+                listRecords = root.find(OAI + 'ListRecords')
+                if listRecords is None:
+                    print("ListRecords not found", xml.decode("utf-8"))
+                    sys.stdout.flush()
+                    return ds
+            else:
+                k += len(records)# skipped
+
+            if k + 1 > start+limit:
+                print("reached limit", k+1, start+limit)
+                sys.stdout.flush()
+                break
+
             token = listRecords.find(OAI + 'resumptionToken')
             if token is None or token.text is None:
                 break
@@ -176,6 +193,7 @@ class Scraper(object):
         # end while
         t1 = time.time()
         print('fetching is completes in {0:.1f} seconds.'.format(t1 - t0))
+        sys.stdout.flush()
         return ds
 
 
