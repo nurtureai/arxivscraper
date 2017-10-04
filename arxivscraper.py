@@ -149,13 +149,13 @@ class Scraper(object):
             # print("xml:"+xml.decode("utf-8"))
 
             records = root.findall(OAI + 'ListRecords/' + OAI + 'record')
-            sys.stdout.flush()
             print("records: ", len(records), "k", k)
+            sys.stdout.flush()
             if k >= start:
                 for record in records:
                     meta = record.find(OAI + 'metadata').find(ARXIV + 'arXiv')
                     record = Record(meta).output()
-                    if k >= start and k < start+limit:
+                    if k >= start and (limit == -1 or k < start+limit):
                         if self.append_all:
                             ds.append(record)
                         else:
@@ -168,7 +168,7 @@ class Scraper(object):
                             if save_record:
                                 ds.append(record)
                     k +=1
-                    if k >= start+limit:
+                    if limit >= 0 and k >= start+limit:
                         break# skip after max reached
                 
                 listRecords = root.find(OAI + 'ListRecords')
@@ -179,7 +179,7 @@ class Scraper(object):
             else:
                 k += len(records)# skipped
 
-            if k + 1 > start+limit:
+            if limit >= 0 and k + 1 > start+limit:
                 print("reached limit", k+1, start+limit)
                 sys.stdout.flush()
                 break
