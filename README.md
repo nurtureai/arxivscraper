@@ -16,7 +16,7 @@
 
 
 ## deployment
-* docker build -t nurtureai/arxivscraper
+* docker build -t nurtureai/arxivscraper .
 * docker push nurtureai/arxivscraper
 
 ## latest & credit:
