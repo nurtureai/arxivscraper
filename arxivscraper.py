@@ -2,7 +2,7 @@
 A python program to retreive recrods from ArXiv.org in given
 categories and specific date range.
 
-Author: Mahdi Sadjadi (sadjadi.seyedmahdi[AT]gmail[DOT]com).
+Author: Mahdi Sadjadi (sadjadi.seyedmahdi[AT]gmail[DOT]com)., James tan(c00lways[AT]gmail[DOT]com)
 """
 from __future__ import print_function
 import xml.etree.ElementTree as ET
@@ -53,8 +53,10 @@ class Record(object):
 
     def _get_authors(self):
         authors = self.xml.findall(ARXIV + 'authors/' + ARXIV + 'author')
-        authors = [author.find(ARXIV + 'keyname').text.lower() for author in authors]
-        return authors
+        res = []
+        for author in authors:
+            res.append({'keyname': author.find(ARXIV + 'keyname').text.lower(), 'forenames': author.find(ARXIV + 'forenames').text.lower()})
+        return res
 
     def output(self):
         d = {'title': self.title,
