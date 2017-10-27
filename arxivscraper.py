@@ -55,7 +55,10 @@ class Record(object):
         authors = self.xml.findall(ARXIV + 'authors/' + ARXIV + 'author')
         res = []
         for author in authors:
-            res.append({'keyname': author.find(ARXIV + 'keyname').text.lower(), 'forenames': author.find(ARXIV + 'forenames').text.lower()})
+            fornamesDom = author.find(ARXIV + 'forenames')
+            keynameDom  = author.find(ARXIV + 'keyname')
+            print("forname", fornamesDom, "keyname", keynameDom)
+            res.append({'keyname': None if keynameDom == None else keynameDom.text.lower(), 'forenames': None if fornamesDom == None else fornamesDom.text.lower() })
         return res
 
     def output(self):
