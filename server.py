@@ -48,23 +48,30 @@ def generate(scraper, limit):
   thus we use a lagging generator, similar to http://stackoverflow.com/questions/1630320/
   """
   # We have some releases. First, yield the opening json
-  batchSize = 10
+  batchSize = -1
+  ds = scraper.scrape(batchSize, 0)
+  yield "[\n"
+
   while index < limit:
-    ds = scraper.scrape(batchSize, index)
-    if index == 0:
-      yield "[\n"
 
     print("ds", len(ds))
-    if len(ds) < batchSize:
+    if len(ds) < batchSize or len(ds) == 0:
       print("size ds below", batchSize)
       break
 
     for i in ds:
+      if index > limit:
+        break
       if index > 0:
         yield ",\n"
       print("i", i)
       yield json.dumps(i)
       index += 1
+
+    if !scraper.hasNext():
+      print("no more next", )
+      break
+    ds = scraper.continue()
 
   yield "]\n"
 

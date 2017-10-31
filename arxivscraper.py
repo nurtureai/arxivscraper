@@ -106,6 +106,8 @@ class Scraper(object):
     def __init__(self, category, date_from=None, date_until=None, t=30, filters={}):
         self.cat = str(category)
         self.t = t
+        self.offset = 0
+        self.nextUrl = ""
         DateToday = datetime.date.today()
         if date_from is None:
             self.f = str(DateToday.replace(day=1))
@@ -123,7 +125,89 @@ class Scraper(object):
             self.append_all = False
             self.keys = filters.keys()
 
-    def scrape(self, limit=20, start=0):
+    def hasNext(self):
+        return self.nextUrl != ""
+
+    def continue(self, limit=-1):
+        print("continue fetch: ", self.offset, " for ", limit, url)
+        sys.stdout.flush()
+        ds = []
+        k = 0
+        while True:
+            sys.stdout.flush()
+            try:
+                response = urlopen(url)
+            except HTTPError as e:
+                if e.code == 503:
+                    to = int(e.hdrs.get('retry-after', 30))
+                    print('Got 503. Retrying after {0:d} seconds.'.format(self.t))
+                    time.sleep(to)
+                    continue
+                else:
+                    raise
+
+            xml = response.read()
+            root = ET.fromstring(xml)
+            hasError = root.findall("error")
+            print("has error? "+str(len(hasError)))
+            if len(hasError) > 0:
+                print("has error: "+xml.decode("utf-8"))
+                raise "error xml"
+            # print("xml:"+xml.decode("utf-8"))
+
+            records = root.findall(OAI + 'ListRecords/' + OAI + 'record')
+            print("records: ", len(records), "k", k)
+            sys.stdout.flush()
+            if k >= start:
+                for record in records:
+                    meta = record.find(OAI + 'metadata').find(ARXIV + 'arXiv')
+                    record = Record(meta).output()
+                    if k >= start and (limit == -1 or k < start+limit):
+                        if self.append_all:
+                            ds.append(record)
+                        else:
+                            save_record = False
+                            for key in self.keys:
+                                for word in self.filters[key]:
+                                    if word.lower() in record[key]:
+                                        save_record = True
+
+                            if save_record:
+                                ds.append(record)
+                    k +=1
+                    if limit >= 0 and k >= start+limit:
+                        break# skip after max reached
+                
+                listRecords = root.find(OAI + 'ListRecords')
+                if listRecords is None:
+                    print("ListRecords not found", xml.decode("utf-8"))
+                    sys.stdout.flush()
+                    return ds
+            else:
+                k += len(records)# skipped
+
+            if limit >= 0 and k + 1 > start+limit:
+                print("reached limit", k+1, start+limit)
+                sys.stdout.flush()
+                break
+
+            token = listRecords.find(OAI + 'resumptionToken')
+            if token is None or token.text is None:
+                self.nextUrl = ""
+                break
+            else:
+                url = BASE + 'resumptionToken=%s' % token.text
+                self.nextUrl = url
+        
+        self.offset += k
+        # end while
+        t1 = time.time()
+        print('fetching is completes in {0:.1f} seconds.'.format(t1 - t0))
+        sys.stdout.flush()
+        return ds
+
+    def scrape(self, limit=-1, start=0):
+        self.offset = start
         t0 = time.time()
         # url = self.url +"&max_results="+str(limit)+"&start="+str(start)
         url = self.url
@@ -192,10 +276,13 @@ class Scraper(object):
 
             token = listRecords.find(OAI + 'resumptionToken')
             if token is None or token.text is None:
+                self.nextUrl = ""
                 break
             else:
                 url = BASE + 'resumptionToken=%s' % token.text
+                self.nextUrl = url
         
+        self.offset += k
         # end while
         t1 = time.time()
         print('fetching is completes in {0:.1f} seconds.'.format(t1 - t0))
