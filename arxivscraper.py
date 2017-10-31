@@ -127,6 +127,7 @@ class Scraper(object):
         t0 = time.time()
         # url = self.url +"&max_results="+str(limit)+"&start="+str(start)
         url = self.url
+        
         print("fetching: ", start, "/", limit, url)
         sys.stdout.flush()
         ds = []

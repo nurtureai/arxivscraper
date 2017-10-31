@@ -4,7 +4,8 @@ import tempfile
 import logging
 import urllib
 import arxivscraper
-from flask import Flask, request, redirect, url_for, abort, send_file, jsonify
+import json
+from flask import Flask, Response, request, redirect, url_for, abort, send_file, jsonify
 from flask_api import status
 from werkzeug import secure_filename
 
@@ -28,14 +29,45 @@ def crawl():
   start = int(request.args.get("start", 0))
   limit = int(request.args.get("limit", 20))
 
+  scraper = arxivscraper.Scraper(category=cat, date_from=date_from,date_until=date_to)
+
   try:
     # print("fetching category: "+cat+", from: "+date_from+", to: "+date_to)
-    scraper = arxivscraper.Scraper(category=cat, date_from=date_from,date_until=date_to)
-    ds = scraper.scrape(limit, start)
+    return Response(generate(scraper, limit), content_type='application/json')
+
   except Exception as e:
     return jsonify({error: e.message}), status.HTTP_500_INTERNAL_SERVER_ERROR
 
-  return jsonify(ds)
+  # return jsonify(ds)
+
+def generate(scraper, limit):
+  index = 0
+  """
+  A lagging generator to stream JSON so we don't have to hold everything in memory
+  This is a little tricky, as we need to omit the last comma to make valid JSON,
+  thus we use a lagging generator, similar to http://stackoverflow.com/questions/1630320/
+  """
+  # We have some releases. First, yield the opening json
+  batchSize = 10
+  while index < limit:
+    ds = scraper.scrape(batchSize, index)
+    if index == 0:
+      yield "[\n"
+
+    print("ds", len(ds))
+    if len(ds) < batchSize:
+      print("size ds below", batchSize)
+      break
+
+    for i in ds:
+      if index > 0:
+        yield ",\n"
+      print("i", i)
+      yield json.dumps(i)
+      index += 1
+
+  yield "]\n"
+
 
 if __name__ == '__main__':
   app.debug = True
