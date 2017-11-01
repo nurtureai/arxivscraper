@@ -128,7 +128,8 @@ class Scraper(object):
     def hasNext(self):
         return self.nextUrl != ""
 
-    def continue(self, limit=-1):
+    def next(self):
+        limit = -1
         print("continue fetch: ", self.offset, " for ", limit, url)
         sys.stdout.flush()
         ds = []
@@ -136,6 +137,7 @@ class Scraper(object):
         while True:
             sys.stdout.flush()
             try:
+                url = self.nextUrl
                 response = urlopen(url)
             except HTTPError as e:
                 if e.code == 503:
@@ -198,11 +200,14 @@ class Scraper(object):
             else:
                 url = BASE + 'resumptionToken=%s' % token.text
                 self.nextUrl = url
+
+            if 1==1:
+                break# use next to continue
         
         self.offset += k
         # end while
         t1 = time.time()
-        print('fetching is completes in {0:.1f} seconds.'.format(t1 - t0))
+        print('fetching is completes in {0:.1f} seconds, offset: '.format(t1 - t0), self.offset)
         sys.stdout.flush()
         return ds
 
@@ -281,6 +286,9 @@ class Scraper(object):
             else:
                 url = BASE + 'resumptionToken=%s' % token.text
                 self.nextUrl = url
+
+            if 1==1:
+                break# use next to continue
         
         self.offset += k
         # end while
