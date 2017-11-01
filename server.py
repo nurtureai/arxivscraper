@@ -53,9 +53,8 @@ def generate(scraper, limit):
   yield "[\n"
 
   while index < limit and len(ds) > 0:
-    print("ds", len(ds))
     if len(ds) < batchSize or len(ds) == 0:
-      print("size ds below", batchSize)
+      # print("size ds below", batchSize)
       break
 
     for i in ds:
@@ -67,10 +66,13 @@ def generate(scraper, limit):
       yield json.dumps(i)
       index += 1
 
-    if not scraper.hasNext():
-      print("no more next")
+    if index >= limit:
       break
-    ds = scraper.next()
+
+    if not scraper.hasNext():
+      # print("no more next")
+      break
+    ds = scraper.next(limit - index)
 
   yield "]\n"
 

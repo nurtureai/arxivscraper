@@ -128,9 +128,8 @@ class Scraper(object):
     def hasNext(self):
         return self.nextUrl != ""
 
-    def next(self):
+    def next(self, limit=-1):
         t0 = time.time()
-        limit = -1
         sys.stdout.flush()
         ds = []
         k = 0
@@ -155,7 +154,7 @@ class Scraper(object):
         xml = response.read()
         root = ET.fromstring(xml)
         hasError = root.findall("error")
-        print("has error? "+str(len(hasError)))
+        # print("has error? "+str(len(hasError)))
         if len(hasError) > 0:
             print("has error: "+xml.decode("utf-8"))
             raise "error xml"
@@ -200,7 +199,7 @@ class Scraper(object):
                 url = BASE + 'resumptionToken=%s' % token.text
                 self.nextUrl = url
 
-        
+        print("next size: ", len(ds))
         self.offset += k
         # end while
         t1 = time.time()
@@ -234,7 +233,7 @@ class Scraper(object):
             xml = response.read()
             root = ET.fromstring(xml)
             hasError = root.findall("error")
-            print("has error? "+str(len(hasError)))
+            # print("has error? "+str(len(hasError)))
             if len(hasError) > 0:
                 print("has error: "+xml.decode("utf-8"))
                 raise "error xml"
