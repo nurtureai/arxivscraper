@@ -57,7 +57,7 @@ class Record(object):
         for author in authors:
             fornamesDom = author.find(ARXIV + 'forenames')
             keynameDom  = author.find(ARXIV + 'keyname')
-            print("forname", fornamesDom, "keyname", keynameDom)
+            # print("forname", fornamesDom, "keyname", keynameDom)
             res.append({'keyname': None if keynameDom == None else keynameDom.text.lower(), 'forenames': None if fornamesDom == None else fornamesDom.text.lower() })
         return res
 
@@ -129,6 +129,7 @@ class Scraper(object):
         return self.nextUrl != ""
 
     def next(self):
+        t0 = time.time()
         limit = -1
         sys.stdout.flush()
         ds = []
@@ -163,36 +164,33 @@ class Scraper(object):
         records = root.findall(OAI + 'ListRecords/' + OAI + 'record')
         print("records: ", len(records), "k", k)
         sys.stdout.flush()
-        if k >= start:
-            for record in records:
-                meta = record.find(OAI + 'metadata').find(ARXIV + 'arXiv')
-                record = Record(meta).output()
-                if k >= start and (limit == -1 or k < start+limit):
-                    if self.append_all:
+        for record in records:
+            meta = record.find(OAI + 'metadata').find(ARXIV + 'arXiv')
+            record = Record(meta).output()
+            if (limit == -1 or k < limit):
+                if self.append_all:
+                    ds.append(record)
+                else:
+                    save_record = False
+                    for key in self.keys:
+                        for word in self.filters[key]:
+                            if word.lower() in record[key]:
+                                save_record = True
+
+                    if save_record:
                         ds.append(record)
-                    else:
-                        save_record = False
-                        for key in self.keys:
-                            for word in self.filters[key]:
-                                if word.lower() in record[key]:
-                                    save_record = True
+            k +=1
+            if limit >= 0 and k >= limit:
+                break# skip after max reached
+        
+        listRecords = root.find(OAI + 'ListRecords')
+        if listRecords is None:
+            print("ListRecords not found", xml.decode("utf-8"))
+            sys.stdout.flush()
+            return ds
 
-                        if save_record:
-                            ds.append(record)
-                k +=1
-                if limit >= 0 and k >= start+limit:
-                    break# skip after max reached
-            
-            listRecords = root.find(OAI + 'ListRecords')
-            if listRecords is None:
-                print("ListRecords not found", xml.decode("utf-8"))
-                sys.stdout.flush()
-                return ds
-        else:
-            k += len(records)# skipped
-
-        if limit >= 0 and k + 1 > start+limit:
-            print("reached limit", k+1, start+limit)
+        if limit >= 0 and k + 1 > limit:
+            print("reached limit", k+1, limit)
             sys.stdout.flush()
         else:
             token = listRecords.find(OAI + 'resumptionToken')
