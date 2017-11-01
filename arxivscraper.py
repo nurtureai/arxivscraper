@@ -130,15 +130,18 @@ class Scraper(object):
 
     def next(self):
         limit = -1
-        print("continue fetch: ", self.offset, " for ", limit, url)
         sys.stdout.flush()
         ds = []
         k = 0
+
+        url = self.nextUrl
         while True:
+            print("continue fetch: ", self.offset, " for ", limit, url)
             sys.stdout.flush()
             try:
-                url = self.nextUrl
                 response = urlopen(url)
+                if 1==1:
+                    break
             except HTTPError as e:
                 if e.code == 503:
                     to = int(e.hdrs.get('retry-after', 30))
@@ -148,61 +151,57 @@ class Scraper(object):
                 else:
                     raise
 
-            xml = response.read()
-            root = ET.fromstring(xml)
-            hasError = root.findall("error")
-            print("has error? "+str(len(hasError)))
-            if len(hasError) > 0:
-                print("has error: "+xml.decode("utf-8"))
-                raise "error xml"
-            # print("xml:"+xml.decode("utf-8"))
+        xml = response.read()
+        root = ET.fromstring(xml)
+        hasError = root.findall("error")
+        print("has error? "+str(len(hasError)))
+        if len(hasError) > 0:
+            print("has error: "+xml.decode("utf-8"))
+            raise "error xml"
+        # print("xml:"+xml.decode("utf-8"))
 
-            records = root.findall(OAI + 'ListRecords/' + OAI + 'record')
-            print("records: ", len(records), "k", k)
-            sys.stdout.flush()
-            if k >= start:
-                for record in records:
-                    meta = record.find(OAI + 'metadata').find(ARXIV + 'arXiv')
-                    record = Record(meta).output()
-                    if k >= start and (limit == -1 or k < start+limit):
-                        if self.append_all:
+        records = root.findall(OAI + 'ListRecords/' + OAI + 'record')
+        print("records: ", len(records), "k", k)
+        sys.stdout.flush()
+        if k >= start:
+            for record in records:
+                meta = record.find(OAI + 'metadata').find(ARXIV + 'arXiv')
+                record = Record(meta).output()
+                if k >= start and (limit == -1 or k < start+limit):
+                    if self.append_all:
+                        ds.append(record)
+                    else:
+                        save_record = False
+                        for key in self.keys:
+                            for word in self.filters[key]:
+                                if word.lower() in record[key]:
+                                    save_record = True
+
+                        if save_record:
                             ds.append(record)
-                        else:
-                            save_record = False
-                            for key in self.keys:
-                                for word in self.filters[key]:
-                                    if word.lower() in record[key]:
-                                        save_record = True
-
-                            if save_record:
-                                ds.append(record)
-                    k +=1
-                    if limit >= 0 and k >= start+limit:
-                        break# skip after max reached
-                
-                listRecords = root.find(OAI + 'ListRecords')
-                if listRecords is None:
-                    print("ListRecords not found", xml.decode("utf-8"))
-                    sys.stdout.flush()
-                    return ds
-            else:
-                k += len(records)# skipped
-
-            if limit >= 0 and k + 1 > start+limit:
-                print("reached limit", k+1, start+limit)
+                k +=1
+                if limit >= 0 and k >= start+limit:
+                    break# skip after max reached
+            
+            listRecords = root.find(OAI + 'ListRecords')
+            if listRecords is None:
+                print("ListRecords not found", xml.decode("utf-8"))
                 sys.stdout.flush()
-                break
+                return ds
+        else:
+            k += len(records)# skipped
 
+        if limit >= 0 and k + 1 > start+limit:
+            print("reached limit", k+1, start+limit)
+            sys.stdout.flush()
+        else:
             token = listRecords.find(OAI + 'resumptionToken')
             if token is None or token.text is None:
                 self.nextUrl = ""
-                break
             else:
                 url = BASE + 'resumptionToken=%s' % token.text
                 self.nextUrl = url
 
-            if 1==1:
-                break# use next to continue
         
         self.offset += k
         # end while
