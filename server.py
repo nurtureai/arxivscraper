@@ -63,6 +63,8 @@ def generate(scraper, limit):
       if index > 0:
         yield ",\n"
       # print("i", i)
+      # print(".")
+      # print(json.dumps(i), "\n")
       yield json.dumps(i)
       index += 1
 

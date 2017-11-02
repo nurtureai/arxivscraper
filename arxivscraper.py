@@ -221,6 +221,10 @@ class Scraper(object):
             sys.stdout.flush()
             try:
                 response = urlopen(url)
+            except SocketError as e:
+                print("socker error, retrying...")
+                time.sleep(2)
+                continue
             except HTTPError as e:
                 if e.code == 503:
                     to = int(e.hdrs.get('retry-after', 30))
