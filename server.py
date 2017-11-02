@@ -23,7 +23,7 @@ def hello_world():
 
 @app.route('/crawl')
 def crawl():
-  print("arxivscrapper v1.2")
+  print("arxivscrapper v1.3")
   cat = request.args.get('c')
   date_from = request.args.get('from')
   date_to = request.args.get('to')
@@ -59,7 +59,7 @@ def generate(scraper, limit):
       break
 
     for i in ds:
-      if index > limit:
+      if limit > -1 and index > limit:
         break
       if index > 0:
         yield ",\n"
@@ -69,13 +69,17 @@ def generate(scraper, limit):
       yield json.dumps(i)
       index += 1
 
-    if index >= limit:
+    if limit > -1 and index >= limit:
       break
 
     if not scraper.hasNext():
-      # print("no more next")
+      print("no more next")
       break
-    ds = scraper.next(limit - index)
+
+    if limit > -1:
+      ds = scraper.next(limit - index)
+    else:
+      ds = scraper.next(-1)
 
   yield "]\n"
 

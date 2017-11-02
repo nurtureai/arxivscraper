@@ -191,7 +191,9 @@ class Scraper(object):
         if limit >= 0 and k + 1 > limit:
             print("reached limit", k+1, limit)
             sys.stdout.flush()
+            self.nextUrl = ""
         else:
+            print("getting next token")
             token = listRecords.find(OAI + 'resumptionToken')
             if token is None or token.text is None:
                 self.nextUrl = ""
