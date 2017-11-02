@@ -23,7 +23,7 @@ def hello_world():
 
 @app.route('/crawl')
 def crawl():
-  print("arxivscrapper v1.1")
+  print("arxivscrapper v1.2")
   cat = request.args.get('c')
   date_from = request.args.get('from')
   date_to = request.args.get('to')
@@ -53,7 +53,7 @@ def generate(scraper, limit):
   ds = scraper.scrape(batchSize, 0)
   yield "[\n"
 
-  while index < limit and len(ds) > 0:
+  while (limit == -1 or index < limit) and len(ds) > 0:
     if len(ds) < batchSize or len(ds) == 0:
       # print("size ds below", batchSize)
       break
