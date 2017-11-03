@@ -134,12 +134,11 @@ class Scraper(object):
         ds = []
         k = 0
 
-        url = self.nextUrl
         while True:
-            print("continue fetch: ", self.offset, " for ", limit, url)
+            print("continue fetch: ", self.offset, " for ", limit, self.nextUrl)
             sys.stdout.flush()
             try:
-                response = urlopen(url)
+                response = urlopen(self.nextUrl)
                 if 1==1:
                     break
             except HTTPError as e:
@@ -205,7 +204,7 @@ class Scraper(object):
         self.offset += k
         # end while
         t1 = time.time()
-        print('fetching is completes in {0:.1f} seconds, offset: '.format(t1 - t0), self.offset)
+        print('next completes in {0:.1f} seconds, offset: '.format(t1 - t0), self.offset)
         sys.stdout.flush()
         return ds
 
@@ -215,13 +214,13 @@ class Scraper(object):
         # url = self.url +"&max_results="+str(limit)+"&start="+str(start)
         url = self.url
         
-        print("fetching: ", start, "/", limit, url)
         sys.stdout.flush()
         ds = []
         k = 0
         while True:
             sys.stdout.flush()
             try:
+                print("fetching: ", start, "/", limit, url)
                 response = urlopen(url)
             except SocketError as e:
                 print("socker error, retrying...")
@@ -289,7 +288,7 @@ class Scraper(object):
                 url = BASE + 'resumptionToken=%s' % token.text
                 self.nextUrl = url
 
-            if 1==1:
+            if k >= start:
                 break# use next to continue
         
         self.offset += k

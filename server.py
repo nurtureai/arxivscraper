@@ -23,7 +23,7 @@ def hello_world():
 
 @app.route('/crawl')
 def crawl():
-  print("arxivscrapper v1.3")
+  print("arxivscrapper v1.3a")
   cat = request.args.get('c')
   date_from = request.args.get('from')
   date_to = request.args.get('to')
