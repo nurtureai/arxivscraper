@@ -9,14 +9,13 @@ import xml.etree.ElementTree as ET
 import datetime
 import time
 import sys
-PYTHON3 = sys.version_info[0] == 3
-if PYTHON3:
-    from urllib.parse import urlencode
-    from urllib.request import urlopen
-    from urllib.error import HTTPError
-else:
-    from urllib import urlencode
-    from urllib2 import HTTPError, urlopen
+import socket
+
+# python 3
+from urllib.parse import urlencode
+from urllib.request import request as urlrequest
+from urllib.error import HTTPError
+
 OAI = '{http://www.openarchives.org/OAI/2.0/}'
 ARXIV = '{http://arxiv.org/OAI/arXiv/}'
 BASE = 'http://export.arxiv.org/oai2?verb=ListRecords&'
@@ -125,6 +124,15 @@ class Scraper(object):
             self.append_all = False
             self.keys = filters.keys()
 
+    def setProxy(self, proxy):
+        self.proxy = proxy
+        self.proxy_protocol = "http"
+        if proxy.startswith("https:"):
+            self.proxy_protocol = "https"
+        # proxy_support = urllib.ProxyHandler({"http": proxy})
+        # opener = urllib.build_opener(proxy_support)
+        # urllib.install_opener(opener)
+
     def hasNext(self):
         return self.nextUrl != ""
 
@@ -138,7 +146,11 @@ class Scraper(object):
             print("continue fetch: ", self.offset, " for ", limit, self.nextUrl)
             sys.stdout.flush()
             try:
-                response = urlopen(self.nextUrl)
+                req = urlrequest.Request(self.nextUrl)
+                req.set_proxy(self.proxy, self.proxy_protocol)
+                response = urlrequest.urlopen(req)
+
+                # response = urlopen(self.nextUrl)
                 if 1==1:
                     break
             except HTTPError as e:
@@ -221,8 +233,11 @@ class Scraper(object):
             sys.stdout.flush()
             try:
                 print("fetching: ", start, "/", limit, url)
-                response = urlopen(url)
-            except SocketError as e:
+                req = urlrequest.Request(self.nextUrl)
+                req.set_proxy(self.proxy, self.proxy_protocol)
+                response = urlrequest.urlopen(req)
+                # response = urlopen(url)
+            except socket.error as e:
                 print("socker error, retrying...")
                 time.sleep(2)
                 continue
@@ -247,7 +262,7 @@ class Scraper(object):
             records = root.findall(OAI + 'ListRecords/' + OAI + 'record')
             print("records: ", len(records), "k", k)
             sys.stdout.flush()
-            if k >= start:
+            if k <= start+len(records):
                 for record in records:
                     meta = record.find(OAI + 'metadata').find(ARXIV + 'arXiv')
                     record = Record(meta).output()
@@ -273,6 +288,7 @@ class Scraper(object):
                     sys.stdout.flush()
                     return ds
             else:
+                print("skipping", len(records))
                 k += len(records)# skipped
 
             if limit >= 0 and k + 1 > start+limit:
@@ -294,7 +310,7 @@ class Scraper(object):
         self.offset += k
         # end while
         t1 = time.time()
-        print('fetching is completes in {0:.1f} seconds.'.format(t1 - t0))
+        print('fetching is completes in {0:.1f} seconds.'.format(t1 - t0), "offset:", self.offset)
         sys.stdout.flush()
         return ds
 

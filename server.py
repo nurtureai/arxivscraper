@@ -23,14 +23,18 @@ def hello_world():
 
 @app.route('/crawl')
 def crawl():
-  print("arxivscrapper v1.3a")
+  print("arxivscrapper v1.5")
   cat = request.args.get('c')
   date_from = request.args.get('from')
   date_to = request.args.get('to')
   start = int(request.args.get("start", 0))
   limit = int(request.args.get("limit", 20))
+  proxy = request.args.get("proxy" "")
 
   scraper = arxivscraper.Scraper(category=cat, date_from=date_from,date_until=date_to)
+  if proxy is not "":
+    print("setting proxy: ", proxy)
+    scraper.setProxy(proxy)# example: http://xx.xx.xx.xx:80/
 
   try:
     # print("fetching category: "+cat+", from: "+date_from+", to: "+date_to)
