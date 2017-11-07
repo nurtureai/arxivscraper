@@ -143,9 +143,12 @@ class Scraper(object):
         k = 0
 
         while True:
-            print("continue fetch: ", self.offset, " for ", limit, self.nextUrl)
+            print("continue fetch: ", self.offset, " for ", limit, self.nextUrl, "proxy:", self.proxy, self.proxy_protocol)
             sys.stdout.flush()
             try:
+                if time.time() - t0 > 15:
+                    print("socket timed out")
+                    raise
                 req = urlrequest.Request(self.nextUrl)
                 req.set_proxy(self.proxy, self.proxy_protocol)
                 response = urlrequest.urlopen(req)
@@ -229,10 +232,15 @@ class Scraper(object):
         sys.stdout.flush()
         ds = []
         k = 0
+
         while True:
             sys.stdout.flush()
             try:
-                print("fetching: ", start, "/", limit, url)
+                if time.time() - t0 > 15:
+                    print("socket timed out")
+                    raise
+                    # return []
+                print("fetching: ", start, "/", limit, url, "proxy:", self.proxy, self.proxy_protocol)
                 req = urlrequest.Request(url)
                 req.set_proxy(self.proxy, self.proxy_protocol)
                 response = urlrequest.urlopen(req)
