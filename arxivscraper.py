@@ -134,6 +134,9 @@ class Scraper(object):
             self.proxy_protocol = "https"
         else:
             self.proxy = self.proxy[7:]
+
+        self.proxies = {self.proxy_protocol: self.proxy_protocol +"://"+self.proxy}
+        print("proxies:", self.proxies)
         # proxy_support = urllib.ProxyHandler({"http": proxy})
         # opener = urllib.build_opener(proxy_support)
         # urllib.install_opener(opener)
@@ -151,13 +154,16 @@ class Scraper(object):
             print("continue fetch: ", self.offset, " for ", limit, self.nextUrl, "proxy:", self.proxy, self.proxy_protocol)
             sys.stdout.flush()
             try:
-                if time.time() - t0 > 50:
+                if time.time() - t0 > 120:
                     print("socket timed out")
                     raise
-                req = urlrequest.Request(self.nextUrl)
-                if self.proxy is not None and self.proxy is not "":
-                    req.set_proxy(self.proxy, self.proxy_protocol)
-                response = urlrequest.urlopen(req)
+                # req = urlrequest.Request(self.nextUrl)
+                # if self.proxy is not None and self.proxy is not "":
+                #     req.set_proxy(self.proxy, self.proxy_protocol)
+                # response = urlrequest.urlopen(req)
+                # response = requests.get(self.nextUrl, proxies=self.proxies)
+                # response = urlrequest.urlopen(self.nextUrl, proxies=self.proxies)
+                response = urlrequest.URLopener(proxies=self.proxies).open(self.nextUrl)
 
                 # response = urlopen(self.nextUrl)
                 if 1==1:
@@ -247,10 +253,12 @@ class Scraper(object):
                     raise
                     # return []
                 print("fetching: ", start, "/", limit, url, "proxy:", self.proxy, self.proxy_protocol)
-                req = urlrequest.Request(url)
-                if self.proxy is not None and self.proxy is not "":
-                    req.set_proxy(self.proxy, self.proxy_protocol)
-                response = urlrequest.urlopen(req)
+                # req = urlrequest.Request(url)
+                # if self.proxy is not None and self.proxy is not "":
+                    # req.set_proxy(self.proxy, self.proxy_protocol)
+                # response = urlrequest.urlopen(req)
+                response = urlrequest.URLopener(proxies=self.proxies).open(url)
+                # urllib.urlopen(url, proxies=self.proxies)
                 # response = urlopen(url)
             except socket.error as e:
                 print("socker error, retrying...")
