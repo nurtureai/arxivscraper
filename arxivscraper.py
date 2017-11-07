@@ -125,10 +125,15 @@ class Scraper(object):
             self.keys = filters.keys()
 
     def setProxy(self, proxy):
+        if proxy is None or proxy is "":
+            return
         self.proxy = proxy
         self.proxy_protocol = "http"
         if proxy.startswith("https:"):
+            self.proxy = self.proxy[8:]
             self.proxy_protocol = "https"
+        else:
+            self.proxy = self.proxy[7:]
         # proxy_support = urllib.ProxyHandler({"http": proxy})
         # opener = urllib.build_opener(proxy_support)
         # urllib.install_opener(opener)
@@ -146,11 +151,12 @@ class Scraper(object):
             print("continue fetch: ", self.offset, " for ", limit, self.nextUrl, "proxy:", self.proxy, self.proxy_protocol)
             sys.stdout.flush()
             try:
-                if time.time() - t0 > 15:
+                if time.time() - t0 > 50:
                     print("socket timed out")
                     raise
                 req = urlrequest.Request(self.nextUrl)
-                req.set_proxy(self.proxy, self.proxy_protocol)
+                if self.proxy is not None and self.proxy is not "":
+                    req.set_proxy(self.proxy, self.proxy_protocol)
                 response = urlrequest.urlopen(req)
 
                 # response = urlopen(self.nextUrl)
@@ -236,13 +242,14 @@ class Scraper(object):
         while True:
             sys.stdout.flush()
             try:
-                if time.time() - t0 > 15:
+                if time.time() - t0 > 20:
                     print("socket timed out")
                     raise
                     # return []
                 print("fetching: ", start, "/", limit, url, "proxy:", self.proxy, self.proxy_protocol)
                 req = urlrequest.Request(url)
-                req.set_proxy(self.proxy, self.proxy_protocol)
+                if self.proxy is not None and self.proxy is not "":
+                    req.set_proxy(self.proxy, self.proxy_protocol)
                 response = urlrequest.urlopen(req)
                 # response = urlopen(url)
             except socket.error as e:
