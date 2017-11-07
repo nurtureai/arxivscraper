@@ -44,6 +44,8 @@ def crawl():
     return jsonify({error: e.message}), status.HTTP_500_INTERNAL_SERVER_ERROR
 
   # return jsonify(ds)
+def processing_finished():
+  return False
 
 def generate(scraper, limit):
   index = 0

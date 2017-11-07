@@ -154,7 +154,7 @@ class Scraper(object):
             print("continue fetch: ", self.offset, " for ", limit, self.nextUrl, "proxy:", self.proxy, self.proxy_protocol)
             sys.stdout.flush()
             try:
-                if time.time() - t0 > 120:
+                if time.time() - t0 > 60:
                     print("socket timed out")
                     raise
                 # req = urlrequest.Request(self.nextUrl)
@@ -248,7 +248,7 @@ class Scraper(object):
         while True:
             sys.stdout.flush()
             try:
-                if time.time() - t0 > 20:
+                if time.time() - t0 > 60:
                     print("socket timed out")
                     raise
                     # return []
