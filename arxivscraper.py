@@ -13,7 +13,7 @@ import socket
 
 # python 3
 from urllib.parse import urlencode
-from urllib.request import request as urlrequest
+from urllib import request as urlrequest
 from urllib.error import HTTPError
 
 OAI = '{http://www.openarchives.org/OAI/2.0/}'
@@ -233,7 +233,7 @@ class Scraper(object):
             sys.stdout.flush()
             try:
                 print("fetching: ", start, "/", limit, url)
-                req = urlrequest.Request(self.nextUrl)
+                req = urlrequest.Request(url)
                 req.set_proxy(self.proxy, self.proxy_protocol)
                 response = urlrequest.urlopen(req)
                 # response = urlopen(url)
