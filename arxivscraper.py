@@ -107,6 +107,10 @@ class Scraper(object):
         self.t = t
         self.offset = 0
         self.nextUrl = ""
+        self.proxy = ""
+        self.proxy_protocol = ""
+        self.proxies = {}
+
         DateToday = datetime.date.today()
         if date_from is None:
             self.f = str(DateToday.replace(day=1))
