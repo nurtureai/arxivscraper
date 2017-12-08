@@ -110,6 +110,7 @@ class Scraper(object):
         self.proxy = ""
         self.proxy_protocol = ""
         self.proxies = {}
+        self.proxy = ""
 
         DateToday = datetime.date.today()
         if date_from is None:
