@@ -46,7 +46,7 @@ class Record(object):
     def _get_text(self, namespace, tag):
         """Extracts text from an xml field"""
         try:
-            return self.xml.find(namespace + tag).text.strip().lower().replace('\n', '')
+            return self.xml.find(namespace + tag).text.strip().lower().replace('\n', ' ')
         except:
             return ''
 
